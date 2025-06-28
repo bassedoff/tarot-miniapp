@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Выберите карты</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #fdf6f0;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        h1 {
+            color: #6a0dad;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .card {
+            width: 100px;
+            height: 150px;
+            background-color: #fff8f0;
+            border: 2px solid #dcdcdc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 14px;
+            line-height: 1.2;
+            text-align: center;
+            padding: 5px;
+            user-select: none;
+        }
+
+        .card.selected {
+            border-color: #6a0dad;
+            background-color: #f3e8ff;
+            transform: scale(1.05);
+            z-index: 1;
+        }
+
+        button {
+            margin-top: 30px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #6a0dad;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #8b00ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔮 Выберите 3 карты</h1>
+    <div class="cards" id="cards"></div>
+    <button onclick="submitSelection()">Завершить выбор</button>
+
+    <!-- Исправленный путь к JS -->
+    <script src="https://telegram.org/js/telegram-web-app.js "></script>
+    <script>
+        // Список всех доступных карт
+        const allCards = [
+            "Шут", "Маг", "Жрица", "Императрица", "Император",
+            "Священник", "Влюблённые", "Колесница", "Сила", "Отшельник"
+        ];
+
+        const cardsContainer = document.getElementById("cards");
+        let selectedCards = [];
+
+        // Перемешиваем и выбираем 6 случайных карт
+        const shuffled = [...allCards].sort(() => Math.random() - 0.5);
+        const displayedCards = shuffled.slice(0, 6);
+
+        displayedCards.forEach((cardName) => {
+            const cardDiv = document.createElement("div");
+            cardDiv.className = "card";
+            cardDiv.textContent = cardName;
+
+            cardDiv.onclick = () => {
+                if (cardDiv.classList.contains("selected")) {
+                    selectedCards = selectedCards.filter(c => c !== cardName);
+                    cardDiv.classList.remove("selected");
+                } else if (selectedCards.length < 3) {
+                    selectedCards.push(cardName);
+                    cardDiv.classList.add("selected");
+                }
+            };
+
+            cardsContainer.appendChild(cardDiv);
+        });
+
+        // Говорим Telegram, что приложение готово
+        window.Telegram.WebApp.ready();
+
+        function submitSelection() {
+            if (selectedCards.length !== 3) {
+                alert("Выберите ровно 3 карты!");
+                return;
+            }
+
+            const question = new URLSearchParams(window.location.search).get("question") || "Без вопроса";
+
+            const result = {
+                question,
+                cards: selectedCards
+            };
+
+            // Отправляем данные в бота
+            window.Telegram.WebApp.sendData(JSON.stringify(result));
+        }
+    </script>
+</body>
+</html>
